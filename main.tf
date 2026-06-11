@@ -24,8 +24,8 @@ module "gke" {
   name_prefix         = var.cluster_name
   project_id          = var.project_id
   gcp_region          = var.region
-  network_id          = module.vpc.network_name
-  subnetwork_id       = module.vpc.subnetwork_name
+  network_id          = module.vpc.network_id
+  subnetwork_id       = module.vpc.subnetwork_id
   pods_range_name     = "pods"
   services_range_name = "services"
   labels              = var.labels
@@ -50,6 +50,8 @@ module "node_pools" {
   cluster_name               = module.gke.cluster_name
   node_service_account_email = module.gke.node_service_account_email
   labels                     = var.labels
+
+  depends_on = [module.gke]
 
   node_pools = {
     default = {
