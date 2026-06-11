@@ -116,7 +116,10 @@ resource "google_container_cluster" "main" {
 
   # Prevent accidental cluster destruction
   lifecycle {
-    ignore_changes = []
+    ignore_changes = [
+      node_config,
+      node_pool,
+    ]
   }
 
   depends_on = [google_service_account.node_sa]
