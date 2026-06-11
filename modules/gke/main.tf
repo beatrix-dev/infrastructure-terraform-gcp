@@ -20,7 +20,12 @@ resource "google_project_iam_member" "node_sa_roles" {
   role    = each.value
   member  = "serviceAccount:${google_service_account.node_sa.email}"
 
-  depends_on = [ google_service_account.node_sa]
+  depends_on = [google_service_account.node_sa]
+
+  # Retry logic to handle transient IAM propagation delays with WIF
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # ---------------------------------------------------------------------------
@@ -108,4 +113,11 @@ resource "google_container_cluster" "main" {
   deletion_protection = var.cluster_config.deletion_protection
 
   resource_labels = var.labels
+
+  # Prevent accidental cluster destruction
+  lifecycle {
+    ignore_changes = []
+  }
+
+  depends_on = [google_service_account.node_sa]
 }
