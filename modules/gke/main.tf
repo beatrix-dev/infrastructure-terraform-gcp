@@ -30,8 +30,8 @@ resource "google_container_cluster" "main" {
   project  = var.project_id
 
   # Remove the default node pool immediately — we manage pools separately
-  # remove_default_node_pool = true
-  # initial_node_count       = 1
+  remove_default_node_pool = true
+  initial_node_count       = 1
 
   network    = var.network_id
   subnetwork = var.subnetwork_id

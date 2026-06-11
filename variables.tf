@@ -15,3 +15,24 @@ variable "region" {
   default     = "us-central1"
 }
 
+variable "zone" {
+  description = "GCP zone for the cluster"
+  type        = string
+  default     = "us-central1-a"
+}
+
+variable "labels" {
+  description = "Labels applied to all resources"
+  type        = map(string)
+  default     = {}
+}
+
+variable "repository_id" {
+  description = "Artifact Registry repository ID for the container registry"
+  type        = string
+  default     = "app-images"
+}
+
+
+
+
