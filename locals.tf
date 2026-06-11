@@ -1,1 +1,3 @@
-# No locals needed for this simple config
+locals {
+  zone = "${var.region}-a"
+}

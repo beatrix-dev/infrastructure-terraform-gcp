@@ -1,11 +1,11 @@
-# VPC
+#### Google Cloud Platform (GCP) - GKE Cluster with VPC Native Networking
 resource "google_compute_network" "vpc" {
   name                    = "${var.cluster_name}-vpc"
   project                 = var.project_id
   auto_create_subnetworks = false
 }
 
-# Subnet with secondary ranges
+#### Subnet with secondary ranges
 resource "google_compute_subnetwork" "subnet" {
   name          = "${var.cluster_name}-subnet"
   region        = "us-central1"
