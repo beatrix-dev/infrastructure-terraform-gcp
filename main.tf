@@ -36,7 +36,12 @@ module "gke" {
     enable_private_nodes       = true
     enable_private_endpoint    = false
     master_ipv4_cidr_block     = "172.16.0.0/28"
-    master_authorized_networks = []
+    master_authorized_networks = [
+      {
+        cidr_block = "155.93.246.219/32"
+        display_name = "home"
+      }
+    ]
     deletion_protection        = false
   }
 }
