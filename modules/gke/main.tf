@@ -39,6 +39,12 @@ resource "google_container_cluster" "main" {
   # VPC-native networking (alias IPs) — required for private clusters
   networking_mode = "VPC_NATIVE"
 
+  node_config {
+    disk_type = "pd-standard"
+    disk_size_gb = 20
+    machine_type = "e2-medium"
+  }
+
   ip_allocation_policy {
     cluster_secondary_range_name  = var.pods_range_name
     services_secondary_range_name = var.services_range_name
