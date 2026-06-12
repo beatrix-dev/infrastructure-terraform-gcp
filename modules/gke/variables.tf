@@ -27,6 +27,21 @@ variable "cluster_config" {
     }))
     deletion_protection = bool
   })
+
+  validation {
+    condition     = contains(["UNSPECIFIED", "RAPID", "REGULAR", "STABLE"], var.cluster_config.release_channel)
+    error_message = "release_channel must be UNSPECIFIED, RAPID, REGULAR, or STABLE"
+  }
+
+  validation {
+    condition     = can(regex("^([0-9]{1,3}\\.){3}[0-9]{1,3}/28$", var.cluster_config.master_ipv4_cidr_block))
+    error_message = "master_ipv4_cidr_block must be a /28 CIDR block (GKE requirement)"
+  }
+
+  validation {
+    condition     = length(var.cluster_config.master_authorized_networks) > 0
+    error_message = "master_authorized_networks must contain at least one entry"
+  }
 }
 
 variable "network_id" {

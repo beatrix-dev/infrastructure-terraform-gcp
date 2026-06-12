@@ -46,6 +46,35 @@ variable "node_pools" {
       gpu_driver_version = optional(string, "DEFAULT")
     }))
   }))
+
+  validation {
+    condition     = alltrue([for pool in var.node_pools : pool.disk_size_gb >= 10])
+    error_message = "disk_size_gb must be at least 10 for all node pools"
+  }
+
+  validation {
+    condition     = alltrue([for pool in var.node_pools : pool.min_node_count <= pool.max_node_count])
+    error_message = "min_node_count must be <= max_node_count for all node pools"
+  }
+
+  validation {
+    condition     = alltrue([for pool in var.node_pools : pool.initial_node_count >= pool.min_node_count])
+    error_message = "initial_node_count must be >= min_node_count for all node pools"
+  }
+
+  validation {
+    condition     = alltrue([for pool in var.node_pools : contains(["pd-standard", "pd-ssd", "pd-balanced", "pd-extreme"], pool.disk_type)])
+    error_message = "disk_type must be pd-standard, pd-ssd, pd-balanced, or pd-extreme for all node pools"
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for pool in var.node_pools : [
+        for taint in pool.taints : contains(["NO_SCHEDULE", "PREFER_NO_SCHEDULE", "NO_EXECUTE"], taint.effect)
+      ]
+    ]))
+    error_message = "taint effect must be NO_SCHEDULE, PREFER_NO_SCHEDULE, or NO_EXECUTE"
+  }
 }
 
 variable "labels" {

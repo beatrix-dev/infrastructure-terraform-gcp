@@ -7,7 +7,7 @@ terraform {
       name = "infrastructure-dev-gcp"
     }
   }
-  
+
   required_providers {
     google = {
       source  = "hashicorp/google"
