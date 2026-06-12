@@ -2,7 +2,7 @@
 # Service Account for GKE nodes (least-privilege)
 # ---------------------------------------------------------------------------
 resource "google_service_account" "node_sa" {
-  account_id   = "${var.name_prefix}-gke-node-sa"
+  account_id   = local.node_sa_id
   display_name = "GKE Node Service Account — ${var.cluster_config.name}"
   project      = var.project_id
 }
@@ -12,8 +12,8 @@ resource "google_project_iam_member" "node_sa_roles" {
     "roles/logging.logWriter",
     "roles/monitoring.metricWriter",
     "roles/monitoring.viewer",
-    "roles/storage.objectViewer",         # pull images from GCR
-    "roles/artifactregistry.reader",      # pull images from Artifact Registry
+    "roles/storage.objectViewer",    # pull images from GCR
+    "roles/artifactregistry.reader", # pull images from Artifact Registry
   ])
 
   project = var.project_id
@@ -47,7 +47,7 @@ resource "google_container_cluster" "main" {
   networking_mode = "VPC_NATIVE"
 
   node_config {
-    disk_type = "pd-standard"
+    disk_type    = "pd-standard"
     disk_size_gb = 20
     machine_type = "e2-medium"
   }
@@ -79,7 +79,7 @@ resource "google_container_cluster" "main" {
 
   # Workload Identity — lets Kubernetes SAs impersonate GCP SAs (replaces node SA key files)
   workload_identity_config {
-    workload_pool = "${var.project_id}.svc.id.goog"
+    workload_pool = local.workload_pool
   }
 
   addons_config {
@@ -116,7 +116,11 @@ resource "google_container_cluster" "main" {
 
   # Prevent accidental cluster destruction
   lifecycle {
-    ignore_changes = []
+    ignore_changes = [
+      node_config,
+      node_pool,
+      node_locations,
+    ]
   }
 
   depends_on = [google_service_account.node_sa]

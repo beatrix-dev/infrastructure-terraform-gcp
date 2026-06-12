@@ -2,7 +2,7 @@
 # VPC Network
 # ---------------------------------------------------------------------------
 resource "google_compute_network" "main" {
-  name                    = "${var.name_prefix}-vpc"
+  name                    = local.network_name
   project                 = var.project_id
   auto_create_subnetworks = false
   mtu                     = 1460
@@ -13,7 +13,7 @@ resource "google_compute_network" "main" {
 # (VPC-native GKE requires alias IP ranges)
 # ---------------------------------------------------------------------------
 resource "google_compute_subnetwork" "main" {
-  name                     = "${var.name_prefix}-subnet"
+  name                     = local.subnet_name
   project                  = var.project_id
   region                   = var.gcp_region
   network                  = google_compute_network.main.id
@@ -42,7 +42,7 @@ resource "google_compute_subnetwork" "main" {
 # ---------------------------------------------------------------------------
 resource "google_compute_router" "main" {
   count   = var.vpc_config.enable_nat ? 1 : 0
-  name    = "${var.name_prefix}-router"
+  name    = local.router_name
   project = var.project_id
   region  = var.gcp_region
   network = google_compute_network.main.id
@@ -53,7 +53,7 @@ resource "google_compute_router" "main" {
 # ---------------------------------------------------------------------------
 resource "google_compute_router_nat" "main" {
   count   = var.vpc_config.enable_nat ? 1 : 0
-  name    = "${var.name_prefix}-nat"
+  name    = local.nat_name
   project = var.project_id
   region  = var.gcp_region
   router  = google_compute_router.main[0].name
@@ -73,7 +73,7 @@ resource "google_compute_router_nat" "main" {
 
 # Allow intra-cluster traffic (node-to-node, pod-to-pod)
 resource "google_compute_firewall" "allow_internal" {
-  name    = "${var.name_prefix}-allow-internal"
+  name    = local.fw_internal
   project = var.project_id
   network = google_compute_network.main.name
 
@@ -95,7 +95,7 @@ resource "google_compute_firewall" "allow_internal" {
 
 # Allow IAP (Identity-Aware Proxy) SSH — no bastion needed
 resource "google_compute_firewall" "allow_iap_ssh" {
-  name    = "${var.name_prefix}-allow-iap-ssh"
+  name    = local.fw_iap_ssh
   project = var.project_id
   network = google_compute_network.main.name
 
@@ -110,7 +110,7 @@ resource "google_compute_firewall" "allow_iap_ssh" {
 
 # Allow GKE master to reach node kubelet and webhook ports
 resource "google_compute_firewall" "allow_master_to_nodes" {
-  name    = "${var.name_prefix}-allow-master-nodes"
+  name    = local.fw_master
   project = var.project_id
   network = google_compute_network.main.name
 

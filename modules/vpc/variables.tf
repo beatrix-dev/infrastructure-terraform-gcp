@@ -25,6 +25,26 @@ variable "vpc_config" {
     enable_nat          = bool
     nat_log_filter      = optional(string, "ERRORS_ONLY")
   })
+
+  validation {
+    condition     = can(cidrhost(var.vpc_config.subnet_cidr, 0))
+    error_message = "subnet_cidr must be a valid CIDR block (e.g. 10.0.0.0/24)"
+  }
+
+  validation {
+    condition     = can(cidrhost(var.vpc_config.pods_cidr, 0))
+    error_message = "pods_cidr must be a valid CIDR block (e.g. 10.1.0.0/16)"
+  }
+
+  validation {
+    condition     = can(cidrhost(var.vpc_config.services_cidr, 0))
+    error_message = "services_cidr must be a valid CIDR block (e.g. 10.2.0.0/20)"
+  }
+
+  validation {
+    condition     = contains(["ERRORS_ONLY", "TRANSLATIONS_ONLY", "ALL", "NONE"], var.vpc_config.nat_log_filter)
+    error_message = "nat_log_filter must be ERRORS_ONLY, TRANSLATIONS_ONLY, ALL, or NONE"
+  }
 }
 
 variable "labels" {

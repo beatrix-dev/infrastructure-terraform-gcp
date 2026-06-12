@@ -31,18 +31,18 @@ module "gke" {
   labels              = var.labels
 
   cluster_config = {
-    name                       = var.cluster_name
-    release_channel            = "REGULAR"
-    enable_private_nodes       = true
-    enable_private_endpoint    = false
-    master_ipv4_cidr_block     = "172.16.0.0/28"
+    name                    = var.cluster_name
+    release_channel         = "REGULAR"
+    enable_private_nodes    = true
+    enable_private_endpoint = false
+    master_ipv4_cidr_block  = "172.16.0.0/28"
     master_authorized_networks = [
       {
-        cidr_block = "155.93.246.219/32"
+        cidr_block   = "155.93.246.219/32"
         display_name = "home"
       }
     ]
-    deletion_protection        = false
+    deletion_protection = false
   }
 }
 
@@ -82,4 +82,17 @@ module "container_registry" {
   repository_id = var.repository_id
   location      = var.region
   description   = "Container registry for ${var.cluster_name}"
+}
+
+module "database" {
+  source = "./modules/database"
+
+  database_config = {
+    name          = "app-database"
+    instance_name = "app-db-instance"
+    location      = var.region
+    version       = "MYSQL_8_0"
+    tier          = "db-f1-micro"
+    edition       = "ENTERPRISE"
+  }
 }
