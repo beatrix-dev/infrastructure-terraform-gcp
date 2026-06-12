@@ -38,7 +38,7 @@ variable "labels" {
 }
 
 variable "repository_id" {
-  description = "Artifact Registry repository ID for the container registry"
+  description = "Artifact Registry repository ID for the container registry in gcp"
   type        = string
   default     = "app-images"
 }
