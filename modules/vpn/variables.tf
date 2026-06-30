@@ -30,42 +30,33 @@ variable "gcp_asn" {
 }
 
 variable "peer_asn" {
-  description = "BGP ASN of the remote peer (e.g. 64512 for AWS VGW, or your on-prem ASN)"
+  description = "BGP ASN of the remote peer"
   type        = number
   default     = 64512
 }
 
 variable "peer_tunnel_ips" {
-  description = <<-EOT
-    List of exactly 4 outside IP addresses of the remote VPN peer tunnels.
-    Mapping:
-      [0] → GCP interface 0, peer interface 0
-      [1] → GCP interface 1, peer interface 1
-      [2] → GCP interface 0, peer interface 2
-      [3] → GCP interface 1, peer interface 3
-  EOT
+  description = "4 outside IPs of the remote peer. Empty = stage-1 (gateway only). 4 IPs = stage-2 (tunnels active)."
   type        = list(string)
+  default     = []
 
   validation {
-    condition     = length(var.peer_tunnel_ips) == 4
-    error_message = "peer_tunnel_ips must contain exactly 4 IP addresses."
+    condition     = length(var.peer_tunnel_ips) == 0 || length(var.peer_tunnel_ips) == 4
+    error_message = "peer_tunnel_ips must be empty or contain exactly 4 IPs."
   }
 }
 
 variable "peer_cidr" {
-  description = "CIDR block of the remote network — used to allow inbound traffic through the GCP firewall"
+  description = "CIDR block of the remote network — used for the inbound firewall rule (stage-2)"
   type        = string
-
-  validation {
-    condition     = can(cidrhost(var.peer_cidr, 0))
-    error_message = "peer_cidr must be a valid CIDR block (e.g. 10.10.0.0/16)"
-  }
+  default     = null
 }
 
 variable "shared_secret" {
-  description = "Pre-shared key for all VPN tunnels — must match what is configured on the remote peer"
+  description = "Pre-shared key for all VPN tunnels (stage-2)"
   type        = string
   sensitive   = true
+  default     = null
 }
 
 variable "labels" {
