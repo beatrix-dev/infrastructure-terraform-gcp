@@ -1,30 +1,42 @@
-# VPN configuration — copy to vpn.auto.tfvars for local runs.
-# For Terraform Cloud: set these as workspace variables.
-# Mark vpn_shared_secret as sensitive in the TFC workspace UI.
+# VPN configuration — AWS Site-to-Site VPN to GCP HA VPN
+#
+# For Terraform Cloud: set these as workspace Terraform variables.
+# Mark both PSKs as Sensitive in the TFC workspace UI.
+#
+# Where to find these values in AWS:
+#   VPC > Site-to-Site VPN Connections > [your connection] > Tunnel details tab
 
 # ---------------------------------------------------------------------------
-# Stage 1 (gateway only) — leave peer vars empty on first apply to get GCP IPs
+# Stage 1 (gateway only) — apply with peer vars empty to get the GCP tunnel IPs,
+# then give those IPs to AWS when creating your VPN connection / customer gateway.
 # ---------------------------------------------------------------------------
 
 # vpn_peer_tunnel_ips = []   # default — deploys gateway + router only
 
 # ---------------------------------------------------------------------------
-# Stage 2 — fill in once the remote peer provides their tunnel IPs
+# Stage 2 — fill in from the AWS VPN connection Tunnel details tab
 # ---------------------------------------------------------------------------
 
-# 4 outside IPs from the remote peer (e.g. AWS VGW tunnel endpoints)
+# "Outside IP address" for each tunnel (the AWS VGW public IPs)
 vpn_peer_tunnel_ips = [
-  "REMOTE_TUNNEL_IP_1",   # → GCP interface 0, peer interface 0
-  "REMOTE_TUNNEL_IP_2",   # → GCP interface 1, peer interface 1
-  "REMOTE_TUNNEL_IP_3",   # → GCP interface 0, peer interface 2
-  "REMOTE_TUNNEL_IP_4",   # → GCP interface 1, peer interface 3
+  "34.247.125.12",   # AWS Tunnel 1 outside IP
+  "52.215.119.100",  # AWS Tunnel 2 outside IP
 ]
 
-# CIDR block of the remote network
-vpn_peer_cidr = "10.10.0.0/16"
+# AWS VPC CIDR (allows inbound traffic through the firewall rule)
+vpn_peer_cidr = "172.31.0.0/16"
 
-# BGP ASN of the remote peer (AWS default is 64512, on-prem varies)
+# BGP ASN of the AWS Virtual Private Gateway (default 64512)
 vpn_peer_asn = 64512
 
-# Pre-shared key — set this as a SENSITIVE variable in TFC, never commit the real value
-# vpn_shared_secret = "set-in-tfc-workspace"
+# "Inside IP addresses > Customer gateway" — the GCP-side BGP address with /30
+vpn_bgp_tunnel0_cidr = "169.254.235.137/30"
+vpn_bgp_tunnel1_cidr = "169.254.37.197/30"
+
+# "Inside IP addresses > Virtual private gateway" — the AWS-side BGP peer IP
+vpn_bgp_tunnel0_peer_ip = "169.254.235.138"
+vpn_bgp_tunnel1_peer_ip = "169.254.37.198"
+
+# PSKs — set these as SENSITIVE Terraform variables in TFC, never commit real values
+# vpn_tunnel0_psk = "set-in-tfc-as-sensitive-variable"
+# vpn_tunnel1_psk = "set-in-tfc-as-sensitive-variable"
