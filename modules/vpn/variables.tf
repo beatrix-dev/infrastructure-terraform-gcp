@@ -9,17 +9,17 @@ variable "project_id" {
 }
 
 variable "gcp_region" {
-  description = "GCP region"
+  description = "GCP region where the VPN gateway and tunnels are deployed"
   type        = string
 }
 
 variable "network_id" {
-  description = "Self-link of the GCP VPC network"
+  description = "Self-link of the GCP VPC network to attach the VPN gateway to"
   type        = string
 }
 
 variable "network_name" {
-  description = "Name of the GCP VPC network (used for firewall rules)"
+  description = "Name of the GCP VPC network (used for the firewall rule)"
   type        = string
 }
 
@@ -29,41 +29,48 @@ variable "gcp_asn" {
   default     = 65000
 }
 
-variable "aws_asn" {
-  description = "BGP ASN for the AWS Virtual Private Gateway"
+variable "peer_asn" {
+  description = "BGP ASN of the remote peer (e.g. 64512 for AWS VGW, or your on-prem ASN)"
   type        = number
   default     = 64512
 }
 
-variable "aws_vpc_id" {
-  description = "AWS VPC ID to attach the Virtual Private Gateway"
-  type        = string
-}
-
-variable "aws_vpc_cidr" {
-  description = "CIDR block of the AWS VPC (used to allow inbound traffic on GCP firewall)"
-  type        = string
+variable "peer_tunnel_ips" {
+  description = <<-EOT
+    List of exactly 4 outside IP addresses of the remote VPN peer tunnels.
+    These come from whatever is on the other side (AWS VGW, on-prem device, etc.).
+    Mapping:
+      [0] = conn0 tunnel1  → GCP interface 0
+      [1] = conn0 tunnel2  → GCP interface 1
+      [2] = conn1 tunnel1  → GCP interface 0
+      [3] = conn1 tunnel2  → GCP interface 1
+  EOT
+  type        = list(string)
 
   validation {
-    condition     = can(cidrhost(var.aws_vpc_cidr, 0))
-    error_message = "aws_vpc_cidr must be a valid CIDR block (e.g. 10.10.0.0/16)"
+    condition     = length(var.peer_tunnel_ips) == 4
+    error_message = "peer_tunnel_ips must contain exactly 4 IP addresses."
   }
 }
 
-variable "aws_route_table_ids" {
-  description = "AWS route table IDs to enable VPN route propagation into"
-  type        = list(string)
-  default     = []
+variable "peer_cidr" {
+  description = "CIDR block of the remote network — used to allow inbound traffic through the GCP firewall"
+  type        = string
+
+  validation {
+    condition     = can(cidrhost(var.peer_cidr, 0))
+    error_message = "peer_cidr must be a valid CIDR block (e.g. 10.10.0.0/16)"
+  }
 }
 
 variable "shared_secret" {
-  description = "Pre-shared key for all VPN tunnels"
+  description = "Pre-shared key for all VPN tunnels — must match what is configured on the remote peer"
   type        = string
   sensitive   = true
 }
 
 variable "labels" {
-  description = "Labels applied to GCP resources"
+  description = "Labels applied to all GCP resources"
   type        = map(string)
   default     = {}
 }

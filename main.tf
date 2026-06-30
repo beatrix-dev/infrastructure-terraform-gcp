@@ -107,12 +107,11 @@ module "vpn" {
   network_id   = module.vpc.network_id
   network_name = module.vpc.network_name
 
-  aws_vpc_id          = var.aws_vpc_id
-  aws_vpc_cidr        = var.aws_vpc_cidr
-  aws_route_table_ids = var.aws_route_table_ids
-  shared_secret       = var.vpn_shared_secret
+  peer_tunnel_ips = var.vpn_peer_tunnel_ips
+  peer_cidr       = var.vpn_peer_cidr
+  shared_secret   = var.vpn_shared_secret
+  peer_asn        = var.vpn_peer_asn
 
-  labels = local.common_labels
-
+  labels     = local.common_labels
   depends_on = [module.vpc]
 }

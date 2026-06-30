@@ -44,45 +44,36 @@ variable "repository_id" {
 }
 
 # ---------------------------------------------------------------------------
-# VPN / AWS connectivity
+# Cloud VPN (HA VPN)
 # ---------------------------------------------------------------------------
 variable "enable_vpn" {
-  description = "Set to true to deploy the GCP HA VPN and all AWS-side resources"
+  description = "Set to true to deploy GCP Cloud VPN resources"
   type        = bool
   default     = false
 }
 
-variable "aws_region" {
-  description = "AWS region where VPN resources will be created"
-  type        = string
-  default     = "us-east-1"
-}
-
-variable "aws_vpc_id" {
-  description = "AWS VPC ID to connect to via Site-to-Site VPN (required when enable_vpn = true)"
-  type        = string
-  default     = null
-}
-
-variable "aws_vpc_cidr" {
-  description = "CIDR block of the AWS VPC — must not overlap with GCP ranges 10.0/24, 10.1/16, 10.2/20 (required when enable_vpn = true)"
-  type        = string
-  default     = null
-}
-
-variable "aws_route_table_ids" {
-  description = "AWS route table IDs to enable VPN route propagation into (typically your private subnets)"
+variable "vpn_peer_tunnel_ips" {
+  description = "4 outside IP addresses of the remote VPN peer (from AWS, on-prem, or another cloud)"
   type        = list(string)
   default     = []
 }
 
+variable "vpn_peer_cidr" {
+  description = "CIDR of the remote network reachable over the VPN"
+  type        = string
+  default     = null
+}
+
+variable "vpn_peer_asn" {
+  description = "BGP ASN of the remote peer"
+  type        = number
+  default     = 64512
+}
+
 variable "vpn_shared_secret" {
-  description = "Pre-shared key for all four VPN tunnels (required when enable_vpn = true)"
+  description = "Pre-shared key for all VPN tunnels"
   type        = string
   sensitive   = true
   default     = null
 }
-
-
-
 
