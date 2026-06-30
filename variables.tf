@@ -15,9 +15,10 @@ variable "region" {
   default     = "us-central1"
 
   validation {
-    condition     = can(regex("^(us|europe|asia|northamerica|southamerica|australia)-[a-z]+-[0-9]+$", var.region))
+    condition     = can(regex("^(us|europe|asia|northamerica|southamerica|australia)-[a-z]+[0-9]+$", var.region))
     error_message = "region must be a valid GCP region (e.g. us-central1, europe-west1)"
   }
+
 }
 
 variable "zone" {
@@ -29,6 +30,7 @@ variable "zone" {
     condition     = can(regex("^(us|europe|asia|northamerica|southamerica|australia)-[a-z]+-[0-9]+[a-f]$", var.zone))
     error_message = "zone must be a valid GCP zone (e.g. us-central1-a)"
   }
+
 }
 
 variable "labels" {
@@ -38,7 +40,7 @@ variable "labels" {
 }
 
 variable "repository_id" {
-  description = "Artifact Registry repository ID for the container registry"
+  description = "Artifact Registry repository ID for the container registry in gcp"
   type        = string
   default     = "app-images"
 }
