@@ -46,34 +46,6 @@ module "gke" {
   }
 }
 
-module "node_pools" {
-  source = "./modules/node-pools"
-
-  name_prefix                = var.cluster_name
-  project_id                 = var.project_id
-  gcp_location               = local.zone
-  cluster_name               = module.gke.cluster_name
-  node_service_account_email = module.gke.node_service_account_email
-  labels                     = var.labels
-
-  depends_on = [module.gke]
-
-  node_pools = {
-    default = {
-      machine_type       = "e2-medium"
-      disk_size_gb       = 30
-      disk_type          = "pd-standard"
-      initial_node_count = 1
-      min_node_count     = 1
-      max_node_count     = 3
-      spot               = true
-      labels             = {}
-      taints             = []
-      oauth_scopes       = ["https://www.googleapis.com/auth/cloud-platform"]
-      accelerator        = null
-    }
-  }
-}
 
 module "container_registry" {
   source = "./modules/container-registry"
@@ -109,8 +81,8 @@ module "vpn" {
 
   peer_tunnel_ips = var.vpn_peer_tunnel_ips
   peer_cidr       = var.vpn_peer_cidr
-  shared_secret   = var.vpn_shared_secret
   peer_asn        = var.vpn_peer_asn
+  shared_secret   = var.vpn_shared_secret
 
   labels     = local.common_labels
   depends_on = [module.vpc]

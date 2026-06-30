@@ -30,6 +30,6 @@ output "container_registry_url" {
 }
 
 output "vpn_gateway_ips" {
-  description = "GCP HA VPN external IPs — provide these to the remote peer to complete the tunnel setup"
+  description = "GCP HA VPN external IPs — provide these to the remote peer to complete tunnel setup"
   value       = var.enable_vpn ? [module.vpn[0].vpn_gateway_ip_0, module.vpn[0].vpn_gateway_ip_1] : null
 }

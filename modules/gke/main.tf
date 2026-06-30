@@ -22,23 +22,22 @@ resource "google_project_iam_member" "node_sa_roles" {
 
   depends_on = [google_service_account.node_sa]
 
-  # Retry logic to handle transient IAM propagation delays with WIF
   lifecycle {
     create_before_destroy = true
   }
 }
 
 # ---------------------------------------------------------------------------
-# GKE Cluster (regional — control plane spans all zones in the region)
+# GKE Cluster (zonal — single zone avoids 3x node multiplication cost)
 # ---------------------------------------------------------------------------
 resource "google_container_cluster" "main" {
   name     = var.cluster_config.name
   location = var.gcp_location
   project  = var.project_id
 
-  # Remove the default node pool immediately — we manage pools separately
-  remove_default_node_pool = true
-  initial_node_count       = 1
+  # DO NOT use remove_default_node_pool = true — it races with cluster bootstrap
+  # and causes apply to hang 20-40+ min. Manage the default pool in-place instead.
+  initial_node_count = 1
 
   network    = var.network_id
   subnetwork = var.subnetwork_id
@@ -47,9 +46,19 @@ resource "google_container_cluster" "main" {
   networking_mode = "VPC_NATIVE"
 
   node_config {
-    disk_type    = "pd-standard"
-    disk_size_gb = 20
     machine_type = "e2-medium"
+    disk_type    = "pd-standard"
+    disk_size_gb = 30
+    spot         = true
+
+    service_account = google_service_account.node_sa.email
+    oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
+    tags            = ["gke-node"]
+
+    shielded_instance_config {
+      enable_secure_boot          = true
+      enable_integrity_monitoring = true
+    }
   }
 
   ip_allocation_policy {
@@ -75,11 +84,6 @@ resource "google_container_cluster" "main" {
 
   release_channel {
     channel = var.cluster_config.release_channel
-  }
-
-  # Workload Identity — lets Kubernetes SAs impersonate GCP SAs (replaces node SA key files)
-  workload_identity_config {
-    workload_pool = local.workload_pool
   }
 
   addons_config {
@@ -120,6 +124,7 @@ resource "google_container_cluster" "main" {
       node_config,
       node_pool,
       node_locations,
+      initial_node_count,
     ]
   }
 
