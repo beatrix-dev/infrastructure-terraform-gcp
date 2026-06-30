@@ -43,6 +43,37 @@ variable "repository_id" {
   default     = "app-images"
 }
 
+# ---------------------------------------------------------------------------
+# VPN / AWS connectivity
+# ---------------------------------------------------------------------------
+variable "aws_region" {
+  description = "AWS region where VPN resources will be created"
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "aws_vpc_id" {
+  description = "AWS VPC ID to connect to via Site-to-Site VPN"
+  type        = string
+}
+
+variable "aws_vpc_cidr" {
+  description = "CIDR block of the AWS VPC (must not overlap with GCP ranges 10.0/24, 10.1/16, 10.2/20)"
+  type        = string
+}
+
+variable "aws_route_table_ids" {
+  description = "AWS route table IDs to enable VPN route propagation into (typically your private subnets)"
+  type        = list(string)
+  default     = []
+}
+
+variable "vpn_shared_secret" {
+  description = "Pre-shared key for all four VPN tunnels"
+  type        = string
+  sensitive   = true
+}
+
 
 
 
