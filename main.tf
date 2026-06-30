@@ -109,8 +109,8 @@ module "vpn" {
 
   peer_tunnel_ips = var.vpn_peer_tunnel_ips
   peer_cidr       = var.vpn_peer_cidr
-  shared_secret   = var.vpn_shared_secret
   peer_asn        = var.vpn_peer_asn
+  shared_secret   = var.vpn_shared_secret
 
   labels     = local.common_labels
   depends_on = [module.vpc]

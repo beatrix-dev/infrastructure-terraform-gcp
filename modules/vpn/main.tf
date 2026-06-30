@@ -1,6 +1,6 @@
 # ---------------------------------------------------------------------------
-# HA VPN Gateway — 2 external interfaces, each automatically assigned a
-# public IP. These IPs are what the remote peer connects to.
+# GCP HA VPN Gateway — 2 external interfaces, each automatically assigned
+# a public IP. Provide these IPs to the remote peer to complete setup.
 # ---------------------------------------------------------------------------
 resource "google_compute_ha_vpn_gateway" "main" {
   name    = "${var.name_prefix}-ha-vpn-gw"
@@ -11,7 +11,7 @@ resource "google_compute_ha_vpn_gateway" "main" {
 
 # ---------------------------------------------------------------------------
 # Cloud Router — handles BGP route exchange with the remote peer.
-# Kept separate from the NAT router so VPN and egress concerns are isolated.
+# Kept separate from the NAT router so VPN and egress are isolated.
 # ---------------------------------------------------------------------------
 resource "google_compute_router" "vpn" {
   name    = "${var.name_prefix}-vpn-router"
@@ -28,8 +28,7 @@ resource "google_compute_router" "vpn" {
 
 # ---------------------------------------------------------------------------
 # External VPN Gateway — GCP's representation of the remote peer.
-# FOUR_IPS_REDUNDANCY maps to 4 tunnel endpoints on the remote side,
-# giving full HA across both GCP interfaces.
+# Supply 4 outside tunnel IPs from the remote side (AWS, on-prem, etc.).
 # ---------------------------------------------------------------------------
 resource "google_compute_external_vpn_gateway" "peer" {
   name            = "${var.name_prefix}-peer-ext-gw"
@@ -112,9 +111,9 @@ resource "google_compute_vpn_tunnel" "tunnel3" {
 }
 
 # ---------------------------------------------------------------------------
-# Cloud Router Interfaces — one per tunnel, using 169.254.10–13.x/30.
-# Ranges 169.254.0–5.x are reserved by AWS so these are avoided for
-# cross-cloud compatibility. GCP takes .2, remote peer takes .1.
+# Cloud Router Interfaces — one per tunnel.
+# 169.254.10–13.x/30 avoids the ranges reserved by AWS (0–5.x).
+# GCP takes .2, remote peer takes .1.
 # ---------------------------------------------------------------------------
 resource "google_compute_router_interface" "tunnel0" {
   name       = "${var.name_prefix}-if-tunnel-0"

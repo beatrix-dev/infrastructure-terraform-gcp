@@ -38,12 +38,11 @@ variable "peer_asn" {
 variable "peer_tunnel_ips" {
   description = <<-EOT
     List of exactly 4 outside IP addresses of the remote VPN peer tunnels.
-    These come from whatever is on the other side (AWS VGW, on-prem device, etc.).
     Mapping:
-      [0] = conn0 tunnel1  → GCP interface 0
-      [1] = conn0 tunnel2  → GCP interface 1
-      [2] = conn1 tunnel1  → GCP interface 0
-      [3] = conn1 tunnel2  → GCP interface 1
+      [0] → GCP interface 0, peer interface 0
+      [1] → GCP interface 1, peer interface 1
+      [2] → GCP interface 0, peer interface 2
+      [3] → GCP interface 1, peer interface 3
   EOT
   type        = list(string)
 
