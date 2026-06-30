@@ -8,8 +8,8 @@ variable "project_id" {
   type        = string
 }
 
-variable "gcp_region" {
-  description = "GCP region — node pools are spread across all zones in this region"
+variable "gcp_location" {
+  description = "GCP location matching the cluster — zone or region"
   type        = string
 }
 
