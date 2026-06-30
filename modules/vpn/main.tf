@@ -65,9 +65,9 @@ resource "aws_vpn_connection" "conn0" {
   type                = "ipsec.1"
   static_routes_only  = false
 
-  tunnel1_inside_cidr   = "169.254.0.0/30"
+  tunnel1_inside_cidr   = "169.254.10.0/30"
   tunnel1_preshared_key = var.shared_secret
-  tunnel2_inside_cidr   = "169.254.1.0/30"
+  tunnel2_inside_cidr   = "169.254.11.0/30"
   tunnel2_preshared_key = var.shared_secret
 
   tags = { Name = "${var.name_prefix}-vpn-conn-0" }
@@ -79,9 +79,9 @@ resource "aws_vpn_connection" "conn1" {
   type                = "ipsec.1"
   static_routes_only  = false
 
-  tunnel1_inside_cidr   = "169.254.2.0/30"
+  tunnel1_inside_cidr   = "169.254.12.0/30"
   tunnel1_preshared_key = var.shared_secret
-  tunnel2_inside_cidr   = "169.254.3.0/30"
+  tunnel2_inside_cidr   = "169.254.13.0/30"
   tunnel2_preshared_key = var.shared_secret
 
   tags = { Name = "${var.name_prefix}-vpn-conn-1" }
@@ -178,7 +178,7 @@ resource "google_compute_router_interface" "tunnel0" {
   project    = var.project_id
   region     = var.gcp_region
   router     = google_compute_router.vpn.name
-  ip_range   = "169.254.0.2/30"
+  ip_range   = "169.254.10.2/30"
   vpn_tunnel = google_compute_vpn_tunnel.tunnel0.name
 }
 
@@ -187,7 +187,7 @@ resource "google_compute_router_interface" "tunnel1" {
   project    = var.project_id
   region     = var.gcp_region
   router     = google_compute_router.vpn.name
-  ip_range   = "169.254.1.2/30"
+  ip_range   = "169.254.11.2/30"
   vpn_tunnel = google_compute_vpn_tunnel.tunnel1.name
 }
 
@@ -196,7 +196,7 @@ resource "google_compute_router_interface" "tunnel2" {
   project    = var.project_id
   region     = var.gcp_region
   router     = google_compute_router.vpn.name
-  ip_range   = "169.254.2.2/30"
+  ip_range   = "169.254.12.2/30"
   vpn_tunnel = google_compute_vpn_tunnel.tunnel2.name
 }
 
@@ -205,7 +205,7 @@ resource "google_compute_router_interface" "tunnel3" {
   project    = var.project_id
   region     = var.gcp_region
   router     = google_compute_router.vpn.name
-  ip_range   = "169.254.3.2/30"
+  ip_range   = "169.254.13.2/30"
   vpn_tunnel = google_compute_vpn_tunnel.tunnel3.name
 }
 
@@ -217,7 +217,7 @@ resource "google_compute_router_peer" "tunnel0" {
   project                   = var.project_id
   region                    = var.gcp_region
   router                    = google_compute_router.vpn.name
-  peer_ip_address           = "169.254.0.1"
+  peer_ip_address           = "169.254.10.1"
   peer_asn                  = var.aws_asn
   advertised_route_priority = 100
   interface                 = google_compute_router_interface.tunnel0.name
@@ -228,7 +228,7 @@ resource "google_compute_router_peer" "tunnel1" {
   project                   = var.project_id
   region                    = var.gcp_region
   router                    = google_compute_router.vpn.name
-  peer_ip_address           = "169.254.1.1"
+  peer_ip_address           = "169.254.11.1"
   peer_asn                  = var.aws_asn
   advertised_route_priority = 100
   interface                 = google_compute_router_interface.tunnel1.name
@@ -239,7 +239,7 @@ resource "google_compute_router_peer" "tunnel2" {
   project                   = var.project_id
   region                    = var.gcp_region
   router                    = google_compute_router.vpn.name
-  peer_ip_address           = "169.254.2.1"
+  peer_ip_address           = "169.254.12.1"
   peer_asn                  = var.aws_asn
   advertised_route_priority = 100
   interface                 = google_compute_router_interface.tunnel2.name
@@ -250,7 +250,7 @@ resource "google_compute_router_peer" "tunnel3" {
   project                   = var.project_id
   region                    = var.gcp_region
   router                    = google_compute_router.vpn.name
-  peer_ip_address           = "169.254.3.1"
+  peer_ip_address           = "169.254.13.1"
   peer_asn                  = var.aws_asn
   advertised_route_priority = 100
   interface                 = google_compute_router_interface.tunnel3.name
