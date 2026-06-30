@@ -23,7 +23,7 @@ module "gke" {
 
   name_prefix         = var.cluster_name
   project_id          = var.project_id
-  gcp_region          = var.region
+  gcp_location        = local.zone
   network_id          = module.vpc.network_id
   subnetwork_id       = module.vpc.subnetwork_id
   pods_range_name     = "pods"
@@ -51,7 +51,7 @@ module "node_pools" {
 
   name_prefix                = var.cluster_name
   project_id                 = var.project_id
-  gcp_region                 = var.region
+  gcp_location               = local.zone
   cluster_name               = module.gke.cluster_name
   node_service_account_email = module.gke.node_service_account_email
   labels                     = var.labels
@@ -98,6 +98,7 @@ module "database" {
 }
 
 module "vpn" {
+  count  = var.enable_vpn ? 1 : 0
   source = "./modules/vpn"
 
   name_prefix  = var.cluster_name
