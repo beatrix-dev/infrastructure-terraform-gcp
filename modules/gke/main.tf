@@ -33,7 +33,7 @@ resource "google_project_iam_member" "node_sa_roles" {
 # ---------------------------------------------------------------------------
 resource "google_container_cluster" "main" {
   name     = var.cluster_config.name
-  location = var.gcp_region
+  location = var.gcp_location
   project  = var.project_id
 
   # Remove the default node pool immediately — we manage pools separately

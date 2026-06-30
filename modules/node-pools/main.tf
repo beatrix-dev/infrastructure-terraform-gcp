@@ -5,7 +5,7 @@ resource "google_container_node_pool" "pools" {
   for_each = var.node_pools
 
   name     = "${var.name_prefix}-${each.key}"
-  location = var.gcp_region
+  location = var.gcp_location
   cluster  = var.cluster_name
   project  = var.project_id
 
