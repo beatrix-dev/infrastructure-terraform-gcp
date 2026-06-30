@@ -98,6 +98,7 @@ module "database" {
 }
 
 module "vpn" {
+  count  = var.enable_vpn ? 1 : 0
   source = "./modules/vpn"
 
   name_prefix  = var.cluster_name

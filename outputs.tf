@@ -30,14 +30,14 @@ output "container_registry_url" {
 }
 
 output "vpn_gcp_interface_ips" {
-  description = "GCP HA VPN external IPs — configure these as AWS Customer Gateways if managing AWS separately"
-  value = [
-    module.vpn.gcp_vpn_gateway_ip_0,
-    module.vpn.gcp_vpn_gateway_ip_1,
-  ]
+  description = "GCP HA VPN external IPs (null when enable_vpn = false)"
+  value = var.enable_vpn ? [
+    module.vpn[0].gcp_vpn_gateway_ip_0,
+    module.vpn[0].gcp_vpn_gateway_ip_1,
+  ] : null
 }
 
 output "vpn_aws_connection_ids" {
-  description = "AWS Site-to-Site VPN Connection IDs"
-  value       = module.vpn.aws_vpn_connection_ids
+  description = "AWS Site-to-Site VPN Connection IDs (null when enable_vpn = false)"
+  value       = var.enable_vpn ? module.vpn[0].aws_vpn_connection_ids : null
 }
