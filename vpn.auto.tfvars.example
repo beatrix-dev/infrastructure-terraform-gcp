@@ -1,0 +1,30 @@
+# VPN configuration — copy to vpn.auto.tfvars for local runs.
+# For Terraform Cloud: set these as workspace variables.
+# Mark vpn_shared_secret as sensitive in the TFC workspace UI.
+
+# ---------------------------------------------------------------------------
+# Stage 1 (gateway only) — leave peer vars empty on first apply to get GCP IPs
+# ---------------------------------------------------------------------------
+
+# vpn_peer_tunnel_ips = []   # default — deploys gateway + router only
+
+# ---------------------------------------------------------------------------
+# Stage 2 — fill in once the remote peer provides their tunnel IPs
+# ---------------------------------------------------------------------------
+
+# 4 outside IPs from the remote peer (e.g. AWS VGW tunnel endpoints)
+vpn_peer_tunnel_ips = [
+  "REMOTE_TUNNEL_IP_1",   # → GCP interface 0, peer interface 0
+  "REMOTE_TUNNEL_IP_2",   # → GCP interface 1, peer interface 1
+  "REMOTE_TUNNEL_IP_3",   # → GCP interface 0, peer interface 2
+  "REMOTE_TUNNEL_IP_4",   # → GCP interface 1, peer interface 3
+]
+
+# CIDR block of the remote network
+vpn_peer_cidr = "10.10.0.0/16"
+
+# BGP ASN of the remote peer (AWS default is 64512, on-prem varies)
+vpn_peer_asn = 64512
+
+# Pre-shared key — set this as a SENSITIVE variable in TFC, never commit the real value
+# vpn_shared_secret = "set-in-tfc-workspace"
