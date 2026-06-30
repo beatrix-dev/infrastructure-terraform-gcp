@@ -46,22 +46,24 @@ variable "repository_id" {
 # ---------------------------------------------------------------------------
 # Cloud VPN (HA VPN)
 # ---------------------------------------------------------------------------
-variable "enable_vpn" {
-  description = "Set to true to deploy GCP Cloud VPN resources"
-  type        = bool
-  default     = false
-}
-
 variable "vpn_peer_tunnel_ips" {
   description = "4 outside IP addresses of the remote VPN peer (from AWS, on-prem, or another cloud)"
   type        = list(string)
-  default     = []
+
+  validation {
+    condition     = length(var.vpn_peer_tunnel_ips) == 4
+    error_message = "vpn_peer_tunnel_ips must contain exactly 4 IP addresses."
+  }
 }
 
 variable "vpn_peer_cidr" {
   description = "CIDR of the remote network reachable over the VPN"
   type        = string
-  default     = null
+
+  validation {
+    condition     = can(cidrhost(var.vpn_peer_cidr, 0))
+    error_message = "vpn_peer_cidr must be a valid CIDR block (e.g. 10.10.0.0/16)"
+  }
 }
 
 variable "vpn_peer_asn" {
@@ -74,6 +76,5 @@ variable "vpn_shared_secret" {
   description = "Pre-shared key for all VPN tunnels"
   type        = string
   sensitive   = true
-  default     = null
 }
 
