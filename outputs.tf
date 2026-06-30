@@ -29,15 +29,7 @@ output "container_registry_url" {
   description = "Docker-pull URL for the container registry"
 }
 
-output "vpn_gcp_interface_ips" {
-  description = "GCP HA VPN external IPs (null when enable_vpn = false)"
-  value = var.enable_vpn ? [
-    module.vpn[0].gcp_vpn_gateway_ip_0,
-    module.vpn[0].gcp_vpn_gateway_ip_1,
-  ] : null
-}
-
-output "vpn_aws_connection_ids" {
-  description = "AWS Site-to-Site VPN Connection IDs (null when enable_vpn = false)"
-  value       = var.enable_vpn ? module.vpn[0].aws_vpn_connection_ids : null
+output "vpn_gateway_ips" {
+  description = "GCP HA VPN external IPs — provide these to the remote peer to complete the tunnel setup"
+  value       = var.enable_vpn ? [module.vpn[0].vpn_gateway_ip_0, module.vpn[0].vpn_gateway_ip_1] : null
 }
