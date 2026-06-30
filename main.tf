@@ -81,7 +81,14 @@ module "vpn" {
   peer_tunnel_ips = var.vpn_peer_tunnel_ips
   peer_cidr       = var.vpn_peer_cidr
   peer_asn        = var.vpn_peer_asn
-  shared_secret   = var.vpn_shared_secret
+
+  tunnel0_psk = var.vpn_tunnel0_psk
+  tunnel1_psk = var.vpn_tunnel1_psk
+
+  bgp_tunnel0_cidr    = var.vpn_bgp_tunnel0_cidr
+  bgp_tunnel1_cidr    = var.vpn_bgp_tunnel1_cidr
+  bgp_tunnel0_peer_ip = var.vpn_bgp_tunnel0_peer_ip
+  bgp_tunnel1_peer_ip = var.vpn_bgp_tunnel1_peer_ip
 
   labels     = local.common_labels
   depends_on = [module.vpc]
