@@ -28,8 +28,3 @@ output "container_registry_url" {
   value       = module.container_registry.repository_url
   description = "Docker-pull URL for the container registry"
 }
-
-output "vpn_gateway_ips" {
-  description = "GCP HA VPN external IPs — provide these to the remote peer to complete tunnel setup"
-  value       = [module.vpn.vpn_gateway_ip_0, module.vpn.vpn_gateway_ip_1]
-}
