@@ -9,8 +9,8 @@ output "vpn_gateway_ip_1" {
 }
 
 output "vpn_router_name" {
-  description = "Name of the Cloud Router handling BGP for VPN (null in STATIC routing_mode — no router is created)"
-  value       = local.dynamic_routing ? google_compute_router.vpn[0].name : null
+  description = "Name of the Cloud Router every tunnel is attached to (BGP is only actually configured on it in DYNAMIC routing_mode)"
+  value       = google_compute_router.vpn.name
 }
 
 output "tunnels_active" {

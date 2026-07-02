@@ -34,10 +34,12 @@ resource "google_compute_ha_vpn_gateway" "main" {
   network = var.network_id
 }
 
-# Cloud Router — only needed for dynamic (BGP) routing. Not created in static
-# mode since there's no BGP session and nothing else uses it.
+# Cloud Router — every HA VPN tunnel must reference one, even under static
+# routing (GCP rejects tunnel creation with an empty `router` field either
+# way). What routing_mode actually changes is whether a BGP session gets
+# attached to it: see google_compute_router_interface/_peer (DYNAMIC) vs
+# google_compute_route (STATIC) below.
 resource "google_compute_router" "vpn" {
-  count   = local.dynamic_routing ? 1 : 0
   name    = "${var.name_prefix}-vpn-router"
   project = var.project_id
   region  = var.gcp_region
@@ -94,7 +96,7 @@ resource "google_compute_vpn_tunnel" "tunnel0" {
   peer_external_gateway           = google_compute_external_vpn_gateway.peer[0].id
   peer_external_gateway_interface = 0
   shared_secret                   = var.tunnel0_psk
-  router                          = local.dynamic_routing ? google_compute_router.vpn[0].id : null
+  router                          = google_compute_router.vpn.id
   ike_version                     = 2
 }
 
@@ -109,7 +111,7 @@ resource "google_compute_vpn_tunnel" "tunnel1" {
   peer_external_gateway           = google_compute_external_vpn_gateway.peer[0].id
   peer_external_gateway_interface = 1
   shared_secret                   = var.tunnel1_psk
-  router                          = local.dynamic_routing ? google_compute_router.vpn[0].id : null
+  router                          = google_compute_router.vpn.id
   ike_version                     = 2
 }
 
@@ -124,7 +126,7 @@ resource "google_compute_vpn_tunnel" "tunnel2" {
   peer_external_gateway           = google_compute_external_vpn_gateway.peer[0].id
   peer_external_gateway_interface = 2
   shared_secret                   = var.tunnel2_psk
-  router                          = local.dynamic_routing ? google_compute_router.vpn[0].id : null
+  router                          = google_compute_router.vpn.id
   ike_version                     = 2
 }
 
@@ -139,7 +141,7 @@ resource "google_compute_vpn_tunnel" "tunnel3" {
   peer_external_gateway           = google_compute_external_vpn_gateway.peer[0].id
   peer_external_gateway_interface = 3
   shared_secret                   = var.tunnel3_psk
-  router                          = local.dynamic_routing ? google_compute_router.vpn[0].id : null
+  router                          = google_compute_router.vpn.id
   ike_version                     = 2
 }
 
@@ -154,7 +156,7 @@ resource "google_compute_router_interface" "tunnel0" {
   name       = "${var.name_prefix}-if-tunnel-0"
   project    = var.project_id
   region     = var.gcp_region
-  router     = google_compute_router.vpn[0].name
+  router     = google_compute_router.vpn.name
   ip_range   = var.bgp_tunnel0_cidr
   vpn_tunnel = google_compute_vpn_tunnel.tunnel0[0].name
 }
@@ -164,7 +166,7 @@ resource "google_compute_router_interface" "tunnel1" {
   name       = "${var.name_prefix}-if-tunnel-1"
   project    = var.project_id
   region     = var.gcp_region
-  router     = google_compute_router.vpn[0].name
+  router     = google_compute_router.vpn.name
   ip_range   = var.bgp_tunnel1_cidr
   vpn_tunnel = google_compute_vpn_tunnel.tunnel1[0].name
 }
@@ -174,7 +176,7 @@ resource "google_compute_router_interface" "tunnel2" {
   name       = "${var.name_prefix}-if-tunnel-2"
   project    = var.project_id
   region     = var.gcp_region
-  router     = google_compute_router.vpn[0].name
+  router     = google_compute_router.vpn.name
   ip_range   = var.bgp_tunnel2_cidr
   vpn_tunnel = google_compute_vpn_tunnel.tunnel2[0].name
 }
@@ -184,7 +186,7 @@ resource "google_compute_router_interface" "tunnel3" {
   name       = "${var.name_prefix}-if-tunnel-3"
   project    = var.project_id
   region     = var.gcp_region
-  router     = google_compute_router.vpn[0].name
+  router     = google_compute_router.vpn.name
   ip_range   = var.bgp_tunnel3_cidr
   vpn_tunnel = google_compute_vpn_tunnel.tunnel3[0].name
 }
@@ -194,7 +196,7 @@ resource "google_compute_router_peer" "tunnel0" {
   name                      = "${var.name_prefix}-peer-tunnel-0"
   project                   = var.project_id
   region                    = var.gcp_region
-  router                    = google_compute_router.vpn[0].name
+  router                    = google_compute_router.vpn.name
   peer_ip_address           = var.bgp_tunnel0_peer_ip
   peer_asn                  = var.peer_asn
   advertised_route_priority = 100
@@ -206,7 +208,7 @@ resource "google_compute_router_peer" "tunnel1" {
   name                      = "${var.name_prefix}-peer-tunnel-1"
   project                   = var.project_id
   region                    = var.gcp_region
-  router                    = google_compute_router.vpn[0].name
+  router                    = google_compute_router.vpn.name
   peer_ip_address           = var.bgp_tunnel1_peer_ip
   peer_asn                  = var.peer_asn
   advertised_route_priority = 100
@@ -218,7 +220,7 @@ resource "google_compute_router_peer" "tunnel2" {
   name                      = "${var.name_prefix}-peer-tunnel-2"
   project                   = var.project_id
   region                    = var.gcp_region
-  router                    = google_compute_router.vpn[0].name
+  router                    = google_compute_router.vpn.name
   peer_ip_address           = var.bgp_tunnel2_peer_ip
   peer_asn                  = var.peer_asn
   advertised_route_priority = 100
@@ -230,7 +232,7 @@ resource "google_compute_router_peer" "tunnel3" {
   name                      = "${var.name_prefix}-peer-tunnel-3"
   project                   = var.project_id
   region                    = var.gcp_region
-  router                    = google_compute_router.vpn[0].name
+  router                    = google_compute_router.vpn.name
   peer_ip_address           = var.bgp_tunnel3_peer_ip
   peer_asn                  = var.peer_asn
   advertised_route_priority = 100
