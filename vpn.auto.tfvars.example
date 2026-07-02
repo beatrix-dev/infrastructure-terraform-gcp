@@ -1,42 +1,75 @@
-# VPN configuration — AWS Site-to-Site VPN to GCP HA VPN
+# VPN configuration — AWS Site-to-Site VPN to GCP HA VPN (4 tunnels)
 #
-# For Terraform Cloud: set these as workspace Terraform variables.
-# Mark both PSKs as Sensitive in the TFC workspace UI.
+# Topology: 2 separate AWS VPN connections (2 tunnels each) terminate on the
+# SAME GCP HA VPN gateway — one AWS connection per GCP interface IP:
+#   - AWS VPN connection #1 (Customer Gateway = GCP interface 0 IP) -> tunnel 0, tunnel 1
+#   - AWS VPN connection #2 (Customer Gateway = GCP interface 1 IP) -> tunnel 2, tunnel 3
+#
+# For Terraform Cloud: set the PSKs as workspace Terraform variables.
+# Mark all four PSKs as Sensitive in the TFC workspace UI.
 #
 # Where to find these values in AWS:
-#   VPC > Site-to-Site VPN Connections > [your connection] > Tunnel details tab
+#   VPC > Site-to-Site VPN Connections > [each connection] > Tunnel details tab
 
 # ---------------------------------------------------------------------------
-# Stage 1 (gateway only) — apply with peer vars empty to get the GCP tunnel IPs,
-# then give those IPs to AWS when creating your VPN connection / customer gateway.
+# Stage 1 (gateway only) — apply with peer vars empty to get the two GCP
+# interface IPs, then give each one to AWS as a Customer Gateway IP when
+# creating the two VPN connections.
 # ---------------------------------------------------------------------------
 
 # vpn_peer_tunnel_ips = []   # default — deploys gateway + router only
 
 # ---------------------------------------------------------------------------
-# Stage 2 — fill in from the AWS VPN connection Tunnel details tab
+# Stage 2 — fill in from both AWS VPN connections' Tunnel details tabs
 # ---------------------------------------------------------------------------
 
-# "Outside IP address" for each tunnel (the AWS VGW public IPs)
+# "Outside IP address" for each tunnel (the AWS VGW public IPs), in order:
+#   [0] AWS conn #1 tunnel 1   [1] AWS conn #1 tunnel 2
+#   [2] AWS conn #2 tunnel 1   [3] AWS conn #2 tunnel 2
 vpn_peer_tunnel_ips = [
-  "34.247.125.12",   # AWS Tunnel 1 outside IP
-  "52.215.119.100",  # AWS Tunnel 2 outside IP
+  "34.247.125.12",  # AWS VPN connection #1, Tunnel 1 outside IP
+  "52.215.119.100", # AWS VPN connection #1, Tunnel 2 outside IP
+  "18.203.3.154",   # AWS VPN connection #2, Tunnel 1 outside IP
+  "52.48.207.105",  # AWS VPN connection #2, Tunnel 2 outside IP
 ]
 
-# AWS VPC CIDR (allows inbound traffic through the firewall rule)
+# AWS VPC CIDR (allows inbound/outbound traffic through the firewall rules,
+# and is also the default destination for static routes below)
 vpn_peer_cidr = "172.31.0.0/16"
 
-# BGP ASN of the AWS Virtual Private Gateway (default 64512)
+# BGP ASN of the AWS Virtual Private Gateway (default 64512) — only read when
+# vpn_routing_mode = "DYNAMIC"
 vpn_peer_asn = 64512
 
-# "Inside IP addresses > Customer gateway" — the GCP-side BGP address with /30
-vpn_bgp_tunnel0_cidr = "169.254.235.137/30"
-vpn_bgp_tunnel1_cidr = "169.254.37.197/30"
+# ---------------------------------------------------------------------------
+# Routing mode — MUST match what each AWS VPN connection was created with.
+# AWS VPN connections are all-static or all-dynamic (BGP); if either of your
+# two AWS connections was created with routing "Static", set this to "STATIC".
+# ---------------------------------------------------------------------------
+vpn_routing_mode = "STATIC"
 
-# "Inside IP addresses > Virtual private gateway" — the AWS-side BGP peer IP
-vpn_bgp_tunnel0_peer_ip = "169.254.235.138"
-vpn_bgp_tunnel1_peer_ip = "169.254.37.198"
+# --- STATIC mode (default here) -------------------------------------------
+# One equal-priority route per tunnel per CIDR (ECMP-style failover).
+# Leave empty to default to [vpn_peer_cidr]; set explicitly for a
+# narrower/different destination than the whole AWS VPC CIDR.
+# vpn_static_route_destination_ranges = ["172.31.0.0/16"]
+# vpn_static_route_priority           = 1000
+
+# --- DYNAMIC mode (only used when vpn_routing_mode = "DYNAMIC") -----------
+# "Inside IP addresses > Customer Gateway" — the GCP-side BGP address with /30
+# vpn_bgp_tunnel0_cidr = "169.254.235.137/30" # AWS conn #1 tunnel 1
+# vpn_bgp_tunnel1_cidr = "169.254.37.197/30"  # AWS conn #1 tunnel 2
+# vpn_bgp_tunnel2_cidr = "169.254.96.42/30"   # AWS conn #2 tunnel 1
+# vpn_bgp_tunnel3_cidr = "169.254.89.254/30"  # AWS conn #2 tunnel 2
+
+# "Inside IP addresses > Virtual Private Gateway" — the AWS-side BGP peer IP
+# vpn_bgp_tunnel0_peer_ip = "169.254.235.138" # AWS conn #1 tunnel 1
+# vpn_bgp_tunnel1_peer_ip = "169.254.37.198"  # AWS conn #1 tunnel 2
+# vpn_bgp_tunnel2_peer_ip = "169.254.96.41"   # AWS conn #2 tunnel 1
+# vpn_bgp_tunnel3_peer_ip = "169.254.89.253"  # AWS conn #2 tunnel 2
 
 # PSKs — set these as SENSITIVE Terraform variables in TFC, never commit real values
-# vpn_tunnel0_psk = "set-in-tfc-as-sensitive-variable"
-# vpn_tunnel1_psk = "set-in-tfc-as-sensitive-variable"
+# vpn_tunnel0_psk = "set-in-tfc-as-sensitive-variable"  # AWS conn #1 tunnel 1
+# vpn_tunnel1_psk = "set-in-tfc-as-sensitive-variable"  # AWS conn #1 tunnel 2
+# vpn_tunnel2_psk = "set-in-tfc-as-sensitive-variable"  # AWS conn #2 tunnel 1
+# vpn_tunnel3_psk = "set-in-tfc-as-sensitive-variable"  # AWS conn #2 tunnel 2
