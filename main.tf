@@ -18,55 +18,80 @@ module "vpc" {
   }
 }
 
-module "gke" {
-  source = "./modules/gke"
+# Disabled for now — testing with modules.compute-instance instead (cheaper,
+# no capacity/quota fights). Uncomment when back to GKE-based testing.
+#
+# module "gke" {
+#   source = "./modules/gke"
+#
+#   name_prefix         = var.cluster_name
+#   project_id          = var.project_id
+#   gcp_location        = local.zone
+#   network_id          = module.vpc.network_id
+#   subnetwork_id       = module.vpc.subnetwork_id
+#   pods_range_name     = "pods"
+#   services_range_name = "services"
+#   labels              = var.labels
+#
+#   cluster_config = {
+#     name                    = var.cluster_name
+#     release_channel         = "REGULAR"
+#     enable_private_nodes    = true
+#     enable_private_endpoint = false
+#     master_ipv4_cidr_block  = "172.16.0.0/28"
+#     master_authorized_networks = [
+#       {
+#         cidr_block   = "155.93.246.219/32"
+#         display_name = "home"
+#       }
+#     ]
+#     deletion_protection = false
+#   }
+# }
+#
+# module "container_registry" {
+#   source = "./modules/container-registry"
+#
+#   project_id    = var.project_id
+#   repository_id = var.repository_id
+#   location      = var.region
+#   description   = "Container registry for ${var.cluster_name}"
+# }
+#
+# module "database" {
+#   source = "./modules/database"
+#
+#   database_config = {
+#     name          = "app-database"
+#     instance_name = "app-db-instance"
+#     location      = var.region
+#     version       = "MYSQL_8_0"
+#     tier          = "db-f1-micro"
+#     edition       = "ENTERPRISE"
+#   }
+# }
 
-  name_prefix         = var.cluster_name
-  project_id          = var.project_id
-  gcp_location        = local.zone
-  network_id          = module.vpc.network_id
-  subnetwork_id       = module.vpc.subnetwork_id
-  pods_range_name     = "pods"
-  services_range_name = "services"
-  labels              = var.labels
+module "instance" {
+  source = "./modules/compute-instance"
 
-  cluster_config = {
-    name                    = var.cluster_name
-    release_channel         = "REGULAR"
-    enable_private_nodes    = true
-    enable_private_endpoint = false
-    master_ipv4_cidr_block  = "172.16.0.0/28"
-    master_authorized_networks = [
-      {
-        cidr_block   = "155.93.246.219/32"
-        display_name = "home"
-      }
-    ]
-    deletion_protection = false
-  }
-}
-
-
-module "container_registry" {
-  source = "./modules/container-registry"
-
+  name_prefix   = var.cluster_name
   project_id    = var.project_id
-  repository_id = var.repository_id
-  location      = var.region
-  description   = "Container registry for ${var.cluster_name}"
-}
+  region        = var.region
+  network_id    = module.vpc.network_id
+  subnetwork_id = module.vpc.subnetwork_id
+  labels        = local.common_labels
 
-module "database" {
-  source = "./modules/database"
-
-  database_config = {
-    name          = "app-database"
-    instance_name = "app-db-instance"
-    location      = var.region
-    version       = "MYSQL_8_0"
-    tier          = "db-f1-micro"
-    edition       = "ENTERPRISE"
+  instances = {
+    linux = {
+      machine_type = "e2-micro"
+      spot         = true
+      # Capacity error in this zone? Bump zone_index and re-apply — cycles
+      # through every UP zone in var.region without needing exact names.
+      zone_index = 0
+    }
   }
+
+  depends_on = [module.vpc]
 }
 
 module "vpn" {
@@ -82,13 +107,23 @@ module "vpn" {
   peer_cidr       = var.vpn_peer_cidr
   peer_asn        = var.vpn_peer_asn
 
+  routing_mode                    = var.vpn_routing_mode
+  static_route_destination_ranges = var.vpn_static_route_destination_ranges
+  static_route_priority           = var.vpn_static_route_priority
+
   tunnel0_psk = var.vpn_tunnel0_psk
   tunnel1_psk = var.vpn_tunnel1_psk
+  tunnel2_psk = var.vpn_tunnel2_psk
+  tunnel3_psk = var.vpn_tunnel3_psk
 
   bgp_tunnel0_cidr    = var.vpn_bgp_tunnel0_cidr
   bgp_tunnel1_cidr    = var.vpn_bgp_tunnel1_cidr
+  bgp_tunnel2_cidr    = var.vpn_bgp_tunnel2_cidr
+  bgp_tunnel3_cidr    = var.vpn_bgp_tunnel3_cidr
   bgp_tunnel0_peer_ip = var.vpn_bgp_tunnel0_peer_ip
   bgp_tunnel1_peer_ip = var.vpn_bgp_tunnel1_peer_ip
+  bgp_tunnel2_peer_ip = var.vpn_bgp_tunnel2_peer_ip
+  bgp_tunnel3_peer_ip = var.vpn_bgp_tunnel3_peer_ip
 
   labels     = local.common_labels
   depends_on = [module.vpc]
