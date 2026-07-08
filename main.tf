@@ -111,19 +111,10 @@ module "vpn" {
   static_route_destination_ranges = var.vpn_static_route_destination_ranges
   static_route_priority           = var.vpn_static_route_priority
 
-  tunnel0_psk = var.vpn_tunnel0_psk
-  tunnel1_psk = var.vpn_tunnel1_psk
-  tunnel2_psk = var.vpn_tunnel2_psk
-  tunnel3_psk = var.vpn_tunnel3_psk
+  tunnel_psks = var.vpn_tunnel_psks
 
-  bgp_tunnel0_cidr    = var.vpn_bgp_tunnel0_cidr
-  bgp_tunnel1_cidr    = var.vpn_bgp_tunnel1_cidr
-  bgp_tunnel2_cidr    = var.vpn_bgp_tunnel2_cidr
-  bgp_tunnel3_cidr    = var.vpn_bgp_tunnel3_cidr
-  bgp_tunnel0_peer_ip = var.vpn_bgp_tunnel0_peer_ip
-  bgp_tunnel1_peer_ip = var.vpn_bgp_tunnel1_peer_ip
-  bgp_tunnel2_peer_ip = var.vpn_bgp_tunnel2_peer_ip
-  bgp_tunnel3_peer_ip = var.vpn_bgp_tunnel3_peer_ip
+  bgp_tunnel_cidrs    = var.vpn_bgp_tunnel_cidrs
+  bgp_tunnel_peer_ips = var.vpn_bgp_tunnel_peer_ips
 
   labels     = local.common_labels
   depends_on = [module.vpc]
