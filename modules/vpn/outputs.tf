@@ -1,10 +1,10 @@
 output "vpn_gateway_ip_0" {
-  description = "External IP of GCP HA VPN interface 0 — use this as the Customer Gateway IP for AWS VPN connection #1 (tunnels 0 & 1)"
+  description = "External IP of GCP HA VPN interface 0 — give this to the peer as the Customer Gateway/tunnel endpoint IP (used by both the single-device and AWS topologies)"
   value       = google_compute_ha_vpn_gateway.main.vpn_interfaces[0].ip_address
 }
 
 output "vpn_gateway_ip_1" {
-  description = "External IP of GCP HA VPN interface 1 — use this as the Customer Gateway IP for AWS VPN connection #2 (tunnels 2 & 3)"
+  description = "External IP of GCP HA VPN interface 1 — only used in the 4-tunnel AWS topology, as the Customer Gateway IP for AWS VPN connection #2 (tunnels 2 & 3). Unused for a single-device (1-tunnel) peer."
   value       = google_compute_ha_vpn_gateway.main.vpn_interfaces[1].ip_address
 }
 
@@ -18,6 +18,11 @@ output "tunnels_active" {
   value       = local.tunnels_active
 }
 
+output "tunnel_count" {
+  description = "Number of tunnels currently deployed (0 = stage-1 only, 1 = single-device peer, 4 = AWS)"
+  value       = local.tunnel_count
+}
+
 output "routing_mode" {
   description = "Routing mode currently applied to the tunnels (DYNAMIC or STATIC)"
   value       = var.routing_mode
@@ -25,10 +30,5 @@ output "routing_mode" {
 
 output "static_route_names" {
   description = "Names of the static routes created (empty unless routing_mode = STATIC)"
-  value = local.static_routing ? concat(
-    [for r in google_compute_route.static_tunnel0 : r.name],
-    [for r in google_compute_route.static_tunnel1 : r.name],
-    [for r in google_compute_route.static_tunnel2 : r.name],
-    [for r in google_compute_route.static_tunnel3 : r.name],
-  ) : []
+  value       = local.static_routing ? [for r in google_compute_route.static_tunnel : r.name] : []
 }
