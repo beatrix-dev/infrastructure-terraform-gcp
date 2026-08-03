@@ -59,6 +59,10 @@ resource "google_container_cluster" "main" {
       enable_secure_boot          = true
       enable_integrity_monitoring = true
     }
+
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
   }
 
   ip_allocation_policy {
@@ -104,6 +108,10 @@ resource "google_container_cluster" "main" {
   network_policy {
     enabled  = true
     provider = "CALICO"
+  }
+
+  workload_identity_config {
+    workload_pool = "${var.project_id}.svc.id.goog"
   }
 
   # Binary Authorization — allow all in dev, tighten in prod
