@@ -15,5 +15,18 @@ resource "google_sql_database_instance" "mysql_instance" {
     disk_type         = var.database_config.disk_type
     edition           = var.database_config.edition
     availability_type = var.database_config.availability_type
+
+    ip_configuration {
+      ipv4_enabled = var.database_config.ip_configuration.ipv4_enabled
+      ssl_mode     = var.database_config.ip_configuration.require_ssl ? "ENCRYPTED_ONLY" : "ALLOW_UNENCRYPTED_AND_ENCRYPTED"
+
+      dynamic "authorized_networks" {
+        for_each = var.database_config.ip_configuration.authorized_networks
+        content {
+          value = authorized_networks.value.value
+          name  = authorized_networks.value.name
+        }
+      }
+    }
   }
 }

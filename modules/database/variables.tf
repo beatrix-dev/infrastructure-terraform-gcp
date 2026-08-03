@@ -11,6 +11,15 @@ variable "database_config" {
     disk_type           = optional(string, "PD_SSD")
     availability_type   = optional(string, "ZONAL")
     deletion_protection = optional(bool, false)
+
+    ip_configuration = optional(object({
+      ipv4_enabled = optional(bool, true)
+      require_ssl  = optional(bool, true)
+      authorized_networks = optional(list(object({
+        value = string
+        name  = optional(string)
+      })), [])
+    }), {})
   })
 
   validation {
