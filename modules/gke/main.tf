@@ -49,7 +49,7 @@ resource "google_container_cluster" "main" {
     machine_type = "e2-medium"
     disk_type    = "pd-standard"
     disk_size_gb = 30
-    spot         = true
+    spot         = false
 
     service_account = google_service_account.node_sa.email
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]

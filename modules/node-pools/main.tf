@@ -64,9 +64,9 @@ resource "google_container_node_pool" "pools" {
     }
 
     # GKE_METADATA exposes Workload Identity to pods — required for IRSA-equivalent
-    # workload_metadata_config {
-    #   mode = "GKE_METADATA"
-    # }
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
 
     resource_labels = merge(var.labels, { node-pool = each.key })
   }
