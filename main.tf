@@ -49,14 +49,14 @@ module "vpc" {
 #   }
 # }
 #
-# module "container_registry" {
-#   source = "./modules/container-registry"
-#
-#   project_id    = var.project_id
-#   repository_id = var.repository_id
-#   location      = var.region
-#   description   = "Container registry for ${var.cluster_name}"
-# }
+module "container_registry" {
+  source = "./modules/container-registry"
+
+  project_id    = var.project_id
+  repository_id = var.repository_id
+  location      = var.region
+  description   = "Container registry for ${var.cluster_name}"
+}
 #
 # module "database" {
 #   source = "./modules/database"
