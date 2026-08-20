@@ -27,10 +27,10 @@
 #   description = "Command to update kubeconfig"
 # }
 #
-# output "container_registry_url" {
-#   value       = module.container_registry.repository_url
-#   description = "Docker-pull URL for the container registry"
-# }
+output "container_registry_url" {
+  value       = module.container_registry.repository_url
+  description = "Docker-pull URL for the container registry"
+}
 
 # Disabled along with module.instance in main.tf — uncomment together when
 # back to compute-instance-based testing.
