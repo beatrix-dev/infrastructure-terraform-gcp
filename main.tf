@@ -71,51 +71,51 @@ module "vpc" {
 #   }
 # }
 
-module "instance" {
-  source = "./modules/compute-instance"
+# module "instance" {
+#   source = "./modules/compute-instance"
 
-  name_prefix   = var.cluster_name
-  project_id    = var.project_id
-  region        = var.region
-  network_id    = module.vpc.network_id
-  subnetwork_id = module.vpc.subnetwork_id
-  labels        = local.common_labels
+#   name_prefix   = var.cluster_name
+#   project_id    = var.project_id
+#   region        = var.region
+#   network_id    = module.vpc.network_id
+#   subnetwork_id = module.vpc.subnetwork_id
+#   labels        = local.common_labels
 
-  instances = {
-    linux = {
-      machine_type = "e2-micro"
-      spot         = true
-      # Capacity error in this zone? Bump zone_index and re-apply — cycles
-      # through every UP zone in var.region without needing exact names.
-      zone_index = 0
-    }
-  }
+#   instances = {
+#     linux = {
+#       machine_type = "e2-micro"
+#       spot         = true
+#       # Capacity error in this zone? Bump zone_index and re-apply — cycles
+#       # through every UP zone in var.region without needing exact names.
+#       zone_index = 0
+#     }
+#   }
 
-  depends_on = [module.vpc]
-}
+#   depends_on = [module.vpc]
+# }
 
-module "vpn" {
-  source = "./modules/vpn"
+# module "vpn" {
+#   source = "./modules/vpn"
 
-  name_prefix  = var.cluster_name
-  project_id   = var.project_id
-  gcp_region   = var.region
-  network_id   = module.vpc.network_id
-  network_name = module.vpc.network_name
+#   name_prefix  = var.cluster_name
+#   project_id   = var.project_id
+#   gcp_region   = var.region
+#   network_id   = module.vpc.network_id
+#   network_name = module.vpc.network_name
 
-  peer_tunnel_ips = var.vpn_peer_tunnel_ips
-  peer_cidr       = var.vpn_peer_cidr
-  peer_asn        = var.vpn_peer_asn
+#   peer_tunnel_ips = var.vpn_peer_tunnel_ips
+#   peer_cidr       = var.vpn_peer_cidr
+#   peer_asn        = var.vpn_peer_asn
 
-  routing_mode                    = var.vpn_routing_mode
-  static_route_destination_ranges = var.vpn_static_route_destination_ranges
-  static_route_priority           = var.vpn_static_route_priority
+#   routing_mode                    = var.vpn_routing_mode
+#   static_route_destination_ranges = var.vpn_static_route_destination_ranges
+#   static_route_priority           = var.vpn_static_route_priority
 
-  tunnel_psks = var.vpn_tunnel_psks
+#   tunnel_psks = var.vpn_tunnel_psks
 
-  bgp_tunnel_cidrs    = var.vpn_bgp_tunnel_cidrs
-  bgp_tunnel_peer_ips = var.vpn_bgp_tunnel_peer_ips
+#   bgp_tunnel_cidrs    = var.vpn_bgp_tunnel_cidrs
+#   bgp_tunnel_peer_ips = var.vpn_bgp_tunnel_peer_ips
 
-  labels     = local.common_labels
-  depends_on = [module.vpc]
-}
+#   labels     = local.common_labels
+#   depends_on = [module.vpc]
+# }
