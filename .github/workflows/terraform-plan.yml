@@ -1,0 +1,78 @@
+name: Terraform PR Plan
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**.tf'
+      - 'modules/**'
+
+jobs:
+  terraform:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          cli_config_credentials_token: ${{ secrets.TFC_TOKEN }}
+          terraform_version: "1.9.5"
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color
+        continue-on-error: true
+
+      - name: Post Plan to PR
+        uses: actions/github-script@v7
+        env:
+          PLAN: "${{ steps.plan.outputs.stdout }}"
+        with:
+          script: |
+            let plan = process.env.PLAN || 'No plan output captured.';
+
+            const maxLen = 60000;
+            let truncated = false;
+            if (plan.length > maxLen) {
+              plan = plan.slice(0, maxLen);
+              truncated = true;
+            }
+
+            const summaryMatch = plan.match(
+              /Plan: \d+ to add, \d+ to change, \d+ to destroy\.|No changes\. Your infrastructure matches the configuration\./
+            );
+            const summary = summaryMatch ? summaryMatch[0] : 'See full plan below.';
+            const hasDestroy = /Plan: \d+ to add, \d+ to change, [1-9]\d* to destroy\./.test(plan);
+
+            const banner = hasDestroy
+              ? `> ⚠️ **This plan destroys resources — review carefully before approving apply.**\n\n`
+              : '';
+
+            const output = [
+              '#### Terraform Plan 📋',
+              `${banner}**${summary}**`,
+              '',
+              '<details>',
+              '<summary>Show full plan output</summary>',
+              '',
+              '```diff',
+              plan,
+              '```',
+              truncated ? '\n_Output truncated — see full log in the Actions run for the rest._' : '',
+              '</details>',
+              ''
+            ].join('\n');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
