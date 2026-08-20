@@ -55,18 +55,20 @@ jobs:
               ? `> ⚠️ **This plan destroys resources — review carefully before approving apply.**\n\n`
               : '';
 
-            const output = `#### Terraform Plan 📋
-${banner}**${summary}**
-
-<details>
-<summary>Show full plan output</summary>
-
-\`\`\`diff
-${plan}
-\`\`\`
-${truncated ? '\n_Output truncated — see full log in the Actions run for the rest._' : ''}
-</details>
-`;
+            const output = [
+              '#### Terraform Plan 📋',
+              `${banner}**${summary}**`,
+              '',
+              '<details>',
+              '<summary>Show full plan output</summary>',
+              '',
+              '```diff',
+              plan,
+              '```',
+              truncated ? '\n_Output truncated — see full log in the Actions run for the rest._' : '',
+              '</details>',
+              ''
+            ].join('\n');
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
