@@ -12,10 +12,33 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  terraform:
-    name: Terraform Apply
+  plan:
+    name: Terraform Plan
     runs-on: ubuntu-latest
-    environment: Production
+    permissions:
+      contents: read
+    outputs:
+      plan_exitcode: ${{ steps.plan.outputs.exitcode }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          cli_config_credentials_token: ${{ secrets.TFC_TOKEN }}
+          terraform_version: "1.9.5"
+
+      - name: Terraform Init
+        run: terraform init -input=false
+
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color -input=false
+
+  apply:
+    name: Terraform Apply
+    needs: plan
+    runs-on: ubuntu-latest
+    environment: production
     permissions:
       contents: read
     timeout-minutes: 15
