@@ -21,34 +21,34 @@ module "vpc" {
 # Disabled for now — testing with modules.compute-instance instead (cheaper,
 # no capacity/quota fights). Uncomment when back to GKE-based testing.
 #
-# module "gke" {
-#   source = "./modules/gke"
-#
-#   name_prefix         = var.cluster_name
-#   project_id          = var.project_id
-#   gcp_location        = local.zone
-#   network_id          = module.vpc.network_id
-#   subnetwork_id       = module.vpc.subnetwork_id
-#   pods_range_name     = "pods"
-#   services_range_name = "services"
-#   labels              = var.labels
-#
-#   cluster_config = {
-#     name                    = var.cluster_name
-#     release_channel         = "REGULAR"
-#     enable_private_nodes    = true
-#     enable_private_endpoint = false
-#     master_ipv4_cidr_block  = "172.16.0.0/28"
-#     master_authorized_networks = [
-#       {
-#         cidr_block   = "155.93.246.219/32"
-#         display_name = "home"
-#       }
-#     ]
-#     deletion_protection = false
-#   }
-# }
-#
+module "gke" {
+  source = "./modules/gke"
+
+  name_prefix         = var.cluster_name
+  project_id          = var.project_id
+  gcp_location        = local.zone
+  network_id          = module.vpc.network_id
+  subnetwork_id       = module.vpc.subnetwork_id
+  pods_range_name     = "pods"
+  services_range_name = "services"
+  labels              = var.labels
+
+  cluster_config = {
+    name                    = var.cluster_name
+    release_channel         = "REGULAR"
+    enable_private_nodes    = true
+    enable_private_endpoint = false
+    master_ipv4_cidr_block  = "172.16.0.0/28"
+    master_authorized_networks = [
+      {
+        cidr_block   = "155.93.246.219/32"
+        display_name = "home"
+      }
+    ]
+    deletion_protection = false
+  }
+}
+
 module "container_registry" {
   source = "./modules/container-registry"
 
