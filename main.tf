@@ -48,6 +48,35 @@ module "gke" {
     deletion_protection = false
   }
 }
+module "gke_node_pool" {
+  source                     = "./modules/node-pools"
+  name_prefix                = var.cluster_name
+  project_id                 = var.project_id
+  gcp_location               = local.zone
+  cluster_name               = module.gke.cluster_name
+  node_service_account_email = var.node_service_account_email
+  labels                     = var.labels
+  node_pools = {
+    default = {
+      initial_node_count = 1
+      min_node_count     = 1
+      max_node_count     = 3
+      machine_type       = "e2-medium"
+      disk_size_gb       = 100
+      disk_type          = "pd-standard"
+      spot               = false
+      oauth_scopes = [
+        "https://www.googleapis.com/auth/cloud-platform",
+        "https://www.googleapis.com/auth/devstorage.read_only"
+      ]
+      labels = {
+        "node-pool" = "default"
+      }
+      taints = []
+    }
+  }
+}
+
 
 module "container_registry" {
   source = "./modules/container-registry"

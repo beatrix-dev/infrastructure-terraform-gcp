@@ -43,6 +43,26 @@ variable "repository_id" {
   default     = "app-images"
 }
 
+variable "name_prefix" {
+  description = "Prefix for resource names"
+  type        = string
+  default     = "dev"
+}
+
+variable "gcp_location" {
+  description = "GCP location for resources (region or zone)"
+  type        = string
+  default     = "us-central1"
+}
+
+variable "node_service_account_email" {
+  description = "Service account email for GKE node pools"
+  type        = string
+  default     = null
+}
+
+
+
 # ---------------------------------------------------------------------------
 # Cloud VPN (HA VPN — either topology, chosen dynamically by how many peer
 # tunnel IPs are supplied):
