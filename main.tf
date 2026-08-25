@@ -49,7 +49,7 @@ module "gke" {
   }
 }
 module "gke_node_pool" {
-  source = "./modules/gke-node-pool"
+  source = "./modules/node-pool"
 
   name_prefix   = var.cluster_name
   project_id    = var.project_id
