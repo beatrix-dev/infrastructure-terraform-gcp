@@ -48,7 +48,31 @@ module "gke" {
     deletion_protection = false
   }
 }
+module "gke_node_pool" {
+  source = "./modules/gke-node-pool"
 
+  name_prefix   = var.cluster_name
+  project_id    = var.project_id
+  gcp_location  = local.zone
+  cluster_name  = module.gke.cluster_name
+  network_id    = module.vpc.network_id
+  subnetwork_id = module.vpc.subnetwork_id
+  labels        = var.labels
+
+  node_pool_config = {
+    name               = "${var.cluster_name}-node-pool"
+    initial_node_count = 1
+    machine_type       = "e2-medium"
+    min_count          = 2
+    max_count          = 4
+    preemptible        = true
+    disk_size_gb       = 10
+    disk_type          = "pd-standard"
+    auto_repair        = true
+    auto_upgrade       = true
+  }
+  
+}
 module "container_registry" {
   source = "./modules/container-registry"
 
